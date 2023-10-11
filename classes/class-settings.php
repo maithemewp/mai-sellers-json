@@ -4,6 +4,9 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Mai_Sellers_JSON_Settings {
+	protected $path;
+	protected $exists;
+	protected $writable;
 
 	/**
 	 * Mai_Sellers_JSON_Settings constructor.
@@ -24,6 +27,7 @@ class Mai_Sellers_JSON_Settings {
 	 * @return void
 	 */
 	function hooks() {
+		add_action( 'admin_notices',                                 [ $this, 'admin_notice' ] );
 		add_action( 'acf/init',                                      [ $this, 'register' ] );
 		add_action( 'acf/render_field/key=maisj_identifiers',        [ $this, 'admin_css' ] );
 		add_filter( 'acf/load_field/key=maisj_contact_address',      [ $this, 'load_contact_address' ] );
@@ -31,9 +35,31 @@ class Mai_Sellers_JSON_Settings {
 		add_filter( 'acf/load_field/key=maisj_version',              [ $this, 'load_version' ] );
 		add_filter( 'acf/load_field/key=maisj_identifiers',          [ $this, 'load_identifiers' ] );
 		add_filter( 'acf/load_field/key=maisj_sellers',              [ $this, 'load_sellers' ] );
-		add_filter( 'acf/validate_value/name=maisj_identifier_name', [ $this, 'validate_identifier_name' ], 10, 4 );
+		add_filter( 'acf/validate_value/key=maisj_seller_name',      [ $this, 'validate_seller_name_domain' ], 10, 4 );
+		add_filter( 'acf/validate_value/key=maisj_seller_domain',    [ $this, 'validate_seller_name_domain' ], 10, 4 );
 		add_action( 'acf/save_post',                                 [ $this, 'save' ], 99 );
 		add_filter( 'plugin_action_links_mai-sellers-json/mai-sellers-json.php', [ $this, 'add_settings_link' ], 10, 4 );
+	}
+
+	/**
+	 * Adds admin notice if sellers.json file does not exist or is not writeable.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return void
+	 */
+	function admin_notice() {
+		// Check if on our settings page.
+		if ( ! isset( $_GET['page'] ) || 'mai-settings-json' !== $_GET['page'] ) {
+			return;
+		}
+
+		// Check if sellers.json exists.
+		if ( ! $this->exists ) {
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'A sellers.json file does not exist. Updating this page will attempt to create a new file.', 'mai-settings-json' ) );
+		} elseif ( ! $this->writeable ) {
+			printf( '<div class="notice notice-error"><p>%s</p></div>', __( 'The sellers.json file is not writable. Please make sure it is writable. Updating these settings will save to the DB but will not write to the sellers.json file.', 'mai-settings-json' ) );
+		}
 	}
 
 	/**
@@ -44,14 +70,19 @@ class Mai_Sellers_JSON_Settings {
 	 * @return void
 	 */
 	function register() {
+		$this->path      = get_home_path() . 'sellers.json';
+		$this->exists    = file_exists( $this->path );
+		$this->writeable = is_writable( $this->path );
+
 		acf_add_options_sub_page(
 			[
-				'menu_title' => class_exists( 'Mai_Engine' ) ? __( 'Settings.json', 'mai-settings-json' ) : __( 'Mai Settings.json', 'mai-settings-json' ),
-				'page_title' => __( 'Mai Settings.json', 'mai-settings-json' ),
-				'parent'     => class_exists( 'Mai_Engine' ) ? 'mai-theme' : 'options-general.php',
-				'menu_slug'  => 'mai-settings-json',
-				'capability' => 'manage_options',
-				'position'   => 4,
+				'menu_title'      => class_exists( 'Mai_Engine' ) ? __( 'Settings.json', 'mai-settings-json' ) : __( 'Mai Settings.json', 'mai-settings-json' ),
+				'page_title'      => __( 'Mai Settings.json', 'mai-settings-json' ),
+				'parent'          => class_exists( 'Mai_Engine' ) ? 'mai-theme' : 'options-general.php',
+				'menu_slug'       => 'mai-settings-json',
+				'capability'      => 'manage_options',
+				'position'        => 4,
+				'updated_message' => __( 'Values updated in DB.', 'mai-settings-json' ) . ( $this->writeable ? ' ' . __( 'File updated.', 'mai-settings-json' ) : __( ' File was not updated because it is not writeable.', 'mai-settings-json' ) ),
 			]
 		);
 
@@ -68,22 +99,25 @@ class Mai_Sellers_JSON_Settings {
 						'esc_html' => 0,
 					],
 					[
-						'label' => __( 'Contact Address', 'mai-settings-json' ),
-						'key'   => 'maisj_contact_address',
-						'name'  => 'maisj_contact_address',
-						'type'  => 'text',
+						'label'    => __( 'Contact Address', 'mai-settings-json' ),
+						'key'      => 'maisj_contact_address',
+						'name'     => 'maisj_contact_address',
+						'type'     => 'text',
+						'required' => 1,
 					],
 					[
-						'label' => __( 'Contact Email', 'mai-settings-json' ),
-						'key'   => 'maisj_contact_email',
-						'name'  => 'maisj_contact_email',
-						'type'  => 'email',
+						'label'    => __( 'Contact Email', 'mai-settings-json' ),
+						'key'      => 'maisj_contact_email',
+						'name'     => 'maisj_contact_email',
+						'type'     => 'email',
+						'required' => 1,
 					],
 					[
 						'label'         => __( 'Version', 'mai-settings-json' ),
 						'key'           => 'maisj_version',
 						'name'          => 'maisj_version',
 						'type'          => 'text',
+						'required'      => 1,
 						'default_value' => '1.0',
 					],
 					[
@@ -176,7 +210,7 @@ class Mai_Sellers_JSON_Settings {
 							],
 							[
 								'message'  => __( 'Is Confidential', 'mai-settings-json' ),
-								'key'      => 'maisj_is_confidential',
+								'key'      => 'maisj_seller_is_confidential',
 								'name'     => 'is_confidential',
 								'type'     => 'true_false',
 								'wrapper'  => [
@@ -185,7 +219,7 @@ class Mai_Sellers_JSON_Settings {
 							],
 							[
 								'message'  => __( 'Is Passthrough', 'mai-settings-json' ),
-								'key'      => 'maisj_is_passthrough',
+								'key'      => 'maisj_seller_is_passthrough',
 								'name'     => 'is_passthrough',
 								'type'     => 'true_false',
 								'wrapper'  => [
@@ -194,7 +228,7 @@ class Mai_Sellers_JSON_Settings {
 							],
 							[
 								'placeholder' => __( 'Description for this inventory...', 'mai-settings-json' ),
-								'key'         => 'maisj_comment',
+								'key'         => 'maisj_seller_comment',
 								'name'        => 'comment',
 								'type'        => 'textarea',
 								'rows'        => 2,
@@ -221,7 +255,7 @@ class Mai_Sellers_JSON_Settings {
 	/**
 	 * Gets inline admin CSS.
 	 *
-	 * @since 1.1.0
+	 * @since 0.1.0
 	 *
 	 * @param array $field
 	 *
@@ -341,13 +375,13 @@ class Mai_Sellers_JSON_Settings {
 
 		foreach ( $sellers as $key => $values ) {
 			$field['value'][] = [
-				'maisj_seller_id'       => isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '',
-				'maisj_seller_name'     => isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '',
-				'maisj_seller_domain'   => isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '',
-				'maisj_seller_type'     => isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '',
-				'maisj_is_confidential' => isset( $values['is_confidential'] ) ? rest_sanitize_boolean( $values['is_confidential'] ) : 0,
-				'maisj_is_passthrough'  => isset( $values['is_passthrough'] ) ? rest_sanitize_boolean( $values['is_passthrough'] ) : 0,
-				'maisj_comment'         => isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '',
+				'maisj_seller_id'              => isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '',
+				'maisj_seller_name'            => isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '',
+				'maisj_seller_domain'          => isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '',
+				'maisj_seller_type'            => isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '',
+				'maisj_seller_is_confidential' => isset( $values['is_confidential'] ) ? rest_sanitize_boolean( $values['is_confidential'] ) : 0,
+				'maisj_seller_is_passthrough'  => isset( $values['is_passthrough'] ) ? rest_sanitize_boolean( $values['is_passthrough'] ) : 0,
+				'maisj_seller_comment'         => isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '',
 			];
 		}
 
@@ -370,19 +404,57 @@ class Mai_Sellers_JSON_Settings {
 		return $domain;
 	}
 
-	function validate_identifier_name( $valid, $value, $field, $input ){
+	/**
+	 * Validates seller name and domain are required.
+	 *
+	 * @param $valid (mixed)  Whether or not the value is valid (boolean) or a custom error message (string).
+	 * @param $value (mixed)  The field value.
+	 * @param $field (array)  The field array containing all settings.
+	 * @param $input (string) The field DOM element name attribute.
+	 *
+	 * @return mixed
+	 */
+	function validate_seller_name_domain( $valid, $value, $field, $input ) {
+		if ( ! $valid ) {
+			return $valid;
+		}
+
+		// Get name.
+		switch ( $field['key'] ) {
+			case 'maisj_seller_name':
+				$name = __( 'Name', 'mai-settings-json' );
+			break;
+			case 'maisj_seller_domain':
+				$name = __( 'Domain', 'mai-settings-json' );
+			break;
+			default:
+				return $valid;
+
+		}
+
+		// Start counts.
+		static $counts = [
+			'maisj_seller_name'   => -1,
+			'maisj_seller_domain' => -1,
+		];
+
+		// Increment.
+		$counts[ $field['key'] ]++;
+
 		$sellers = $_POST['acf']['maisj_sellers'];
+		$current = isset( $sellers[ "row-{$counts[ $field['key'] ]}" ] ) ? $sellers[ "row-{$counts[ $field['key'] ]}" ] : null;
 
-		ray( $sellers );
+		if ( ! $current ) {
+			return $valid;
+		}
 
-		// if($sellers){
-		// 	if(!$value){
-		// 		$valid = __('This field is required for public events');
-		// 	}
-		// }
+		$confidential = isset( $current['maisj_seller_is_confidential'] ) ? rest_sanitize_boolean( $current['maisj_seller_is_confidential'] ) : 0;
+
+		if ( $confidential && ! $value ) {
+			return $name . ' ' . __( 'is required when "Is Confidential" field is checked.', 'mai-settings-json' );
+		}
 
 		return $valid;
-
 	}
 
 	/**
@@ -491,6 +563,13 @@ class Mai_Sellers_JSON_Settings {
 		foreach ( $options as $option ) {
 			delete_option( $option );
 		}
+
+		// Get values.
+		$array = get_option( 'mai_sellers_json' );
+
+		// JSON encode and write to sellers.json file.
+		$json = json_encode( $array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+		file_put_contents( $this->path, $json );
 	}
 
 	/**
