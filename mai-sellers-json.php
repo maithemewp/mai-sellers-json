@@ -153,26 +153,26 @@ final class Mai_Sellers_JSON_Plugin {
 			return;
 		}
 
-		// // Setup the updater.
-		// $updater = PucFactory::buildUpdateChecker( 'https://github.com/maithemewp/mai-sellers-json/', __FILE__, 'mai-sellers-json' );
+		// Setup the updater.
+		$updater = PucFactory::buildUpdateChecker( 'https://github.com/maithemewp/mai-sellers-json/', __FILE__, 'mai-sellers-json' );
 
-		// // Set the branch that contains the stable release.
-		// $updater->setBranch( 'main' );
+		// Set the branch that contains the stable release.
+		$updater->setBranch( 'main' );
 
-		// // Maybe set github api token.
-		// if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
-		// 	$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
-		// }
+		// Maybe set github api token.
+		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
+			$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
+		}
 
-		// // Add icons for Dashboard > Updates screen.
-		// if ( function_exists( 'mai_get_updater_icons' ) && $icons = mai_get_updater_icons() ) {
-		// 	$updater->addResultFilter(
-		// 		function ( $info ) use ( $icons ) {
-		// 			$info->icons = $icons;
-		// 			return $info;
-		// 		}
-		// 	);
-		// }
+		// Add icons for Dashboard > Updates screen.
+		if ( function_exists( 'mai_get_updater_icons' ) && $icons = mai_get_updater_icons() ) {
+			$updater->addResultFilter(
+				function ( $info ) use ( $icons ) {
+					$info->icons = $icons;
+					return $info;
+				}
+			);
+		}
 	}
 
 	/**
