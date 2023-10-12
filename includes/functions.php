@@ -29,11 +29,13 @@ function maisj_get_values() {
 		return $cache;
 	}
 
-	if ( file_exists( get_home_path() . 'sellers.json' ) ) {
-		$cache = json_decode( file_get_contents( get_home_path() . 'sellers.json' ), true );
-	} else {
-		$cache = (array) get_option( 'mai_settings_json', [] );
-	}
+	$cache = (array) get_option( 'mai_sellers_json', [] );
+
+	// if ( file_exists( get_home_path() . 'sellers.json' ) ) {
+	// 	$cache = json_decode( file_get_contents( get_home_path() . 'sellers.json' ), true );
+	// } else {
+	// 	$cache = (array) get_option( 'mai_sellers_json', [] );
+	// }
 
 	return $cache;
 }
