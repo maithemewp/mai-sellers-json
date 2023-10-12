@@ -28,6 +28,7 @@ class Mai_Sellers_JSON_Settings {
 	 */
 	function hooks() {
 		add_action( 'admin_notices',                                 [ $this, 'admin_notice' ] );
+		add_action( 'acf/input/admin_enqueue_scripts',               [ $this, 'enqueue_script' ] );
 		add_action( 'acf/init',                                      [ $this, 'register' ] );
 		add_action( 'acf/render_field/key=maisj_identifiers',        [ $this, 'admin_css' ] );
 		add_filter( 'acf/load_field/key=maisj_contact_address',      [ $this, 'load_contact_address' ] );
@@ -49,17 +50,39 @@ class Mai_Sellers_JSON_Settings {
 	 * @return void
 	 */
 	function admin_notice() {
-		// Check if on our settings page.
-		if ( ! isset( $_GET['page'] ) || 'mai-settings-json' !== $_GET['page'] ) {
+		// Current screen.
+		$screen = get_current_screen();
+
+		// Bail if not our options page.
+		if ( ! $screen || false === strpos( $screen->id, 'mai-sellers-json' ) ) {
 			return;
 		}
 
 		// Check if sellers.json exists.
 		if ( ! $this->exists ) {
-			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'A sellers.json file does not exist. Updating this page will attempt to create a new file.', 'mai-settings-json' ) );
+			printf( '<div class="notice notice-warning"><p>%s</p></div>', __( 'A sellers.json file does not exist. Updating this page will attempt to create a new file.', 'mai-sellers-json' ) );
 		} elseif ( ! $this->writeable ) {
-			printf( '<div class="notice notice-error"><p>%s</p></div>', __( 'The sellers.json file is not writable. Please make sure it is writable. Updating these settings will save to the DB but will not write to the sellers.json file.', 'mai-settings-json' ) );
+			printf( '<div class="notice notice-error"><p>%s</p></div>', __( 'The sellers.json file is not writable. Please make sure it is writable. Updating these settings will save to the DB but will not write to the sellers.json file.', 'mai-sellers-json' ) );
 		}
+	}
+
+	/**
+	 * Enqueue script for encoder/decoder.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return void
+	 */
+	function enqueue_script() {
+		// Current screen.
+		$screen = get_current_screen();
+
+		// Bail if not our options page.
+		if ( ! $screen || false === strpos( $screen->id, 'mai-sellers-json' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'mai-sellers-json', MAI_SELLERS_JSON_URL . 'assets/js/mai-sellers-json.js', [], MAI_SELLERS_JSON_VERSION, true );
 	}
 
 	/**
@@ -76,44 +99,44 @@ class Mai_Sellers_JSON_Settings {
 
 		acf_add_options_sub_page(
 			[
-				'menu_title'      => class_exists( 'Mai_Engine' ) ? __( 'Settings.json', 'mai-settings-json' ) : __( 'Mai Settings.json', 'mai-settings-json' ),
-				'page_title'      => __( 'Mai Settings.json', 'mai-settings-json' ),
+				'menu_title'      => class_exists( 'Mai_Engine' ) ? __( 'Sellers.json', 'mai-sellers-json' ) : __( 'Mai Sellers.json', 'mai-sellers-json' ),
+				'page_title'      => __( 'Mai Sellers.json', 'mai-sellers-json' ),
 				'parent'          => class_exists( 'Mai_Engine' ) ? 'mai-theme' : 'options-general.php',
-				'menu_slug'       => 'mai-settings-json',
+				'menu_slug'       => 'mai-sellers-json',
 				'capability'      => 'manage_options',
 				'position'        => 4,
-				'updated_message' => __( 'Values updated in DB.', 'mai-settings-json' ) . ( $this->writeable ? ' ' . __( 'File updated.', 'mai-settings-json' ) : __( ' File was not updated because it is not writeable.', 'mai-settings-json' ) ),
+				'updated_message' => __( 'Values updated in DB.', 'mai-sellers-json' ) . ( $this->writeable ? ' ' . __( 'File updated.', 'mai-sellers-json' ) : __( ' File was not updated because it is not writeable.', 'mai-sellers-json' ) ),
 			]
 		);
 
 		acf_add_local_field_group(
 			[
 				'key'    => 'maisj_options',
-				'title'  => __( 'Mai Sellers.json', 'mai-settings-json' ),
+				'title'  => __( 'Mai Sellers.json', 'mai-sellers-json' ),
 				'style'  => 'seamless',
 				'fields' => [
 					[
 						'key'      => 'maisj_message',
 						'type'     => 'message',
-						'message'  => sprintf( '<p>%s <a target="_blank" href="https://iabtechlab.com/wp-content/uploads/2019/07/Sellers.json_Final.pdf">%s.</a></p>', __( 'This is a custom options page for the', 'mai-settings-json' ), __( 'IAB Tech Lab Sellers.json', 'mai-settings-json' ) ),
+						'message'  => sprintf( '<p>%s <a target="_blank" href="https://iabtechlab.com/wp-content/uploads/2019/07/Sellers.json_Final.pdf">%s.</a></p>', __( 'This is a custom options page for the', 'mai-sellers-json' ), __( 'IAB Tech Lab Sellers.json', 'mai-sellers-json' ) ),
 						'esc_html' => 0,
 					],
 					[
-						'label'    => __( 'Contact Address', 'mai-settings-json' ),
+						'label'    => __( 'Contact Address', 'mai-sellers-json' ),
 						'key'      => 'maisj_contact_address',
 						'name'     => 'maisj_contact_address',
 						'type'     => 'text',
 						'required' => 1,
 					],
 					[
-						'label'    => __( 'Contact Email', 'mai-settings-json' ),
+						'label'    => __( 'Contact Email', 'mai-sellers-json' ),
 						'key'      => 'maisj_contact_email',
 						'name'     => 'maisj_contact_email',
 						'type'     => 'email',
 						'required' => 1,
 					],
 					[
-						'label'         => __( 'Version', 'mai-settings-json' ),
+						'label'         => __( 'Version', 'mai-sellers-json' ),
 						'key'           => 'maisj_version',
 						'name'          => 'maisj_version',
 						'type'          => 'text',
@@ -121,8 +144,8 @@ class Mai_Sellers_JSON_Settings {
 						'default_value' => '1.0',
 					],
 					[
-						'label'         => __( 'Identifiers', 'mai-settings-json' ),
-						'instructions'  => sprintf( '%s<br>%s', __( 'Add your identifiers here.', 'mai-sellers-json' ), __( 'Shift + Click the up/down arrow on the left to toggle open/closed.', 'mai-settings-json' ) ),
+						'label'         => __( 'Identifiers', 'mai-sellers-json' ),
+						'instructions'  => sprintf( '%s<br>%s', __( 'Add your identifiers here.', 'mai-sellers-json' ), __( 'Shift + Click the up/down arrow on the left to toggle open/closed.', 'mai-sellers-json' ) ),
 						'key'           => 'maisj_identifiers',
 						'name'          => 'maisj_identifiers',
 						'type'          => 'repeater',
@@ -130,10 +153,10 @@ class Mai_Sellers_JSON_Settings {
 						'min'           => 0,
 						'max'           => 0,
 						'layout'        => 'block',
-						'button_label'  => __( 'Add New Seller', 'mai-settings-json' ),
+						'button_label'  => __( 'Add New Seller', 'mai-sellers-json' ),
 						'sub_fields'    => [
 							[
-								'label'    => __( 'Name', 'mai-settings-json' ),
+								'label'    => __( 'Name', 'mai-sellers-json' ),
 								'key'      => 'maisj_identifier_name',
 								'name'     => 'name',
 								'type'     => 'text',
@@ -143,7 +166,7 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'label'    => __( 'Value', 'mai-settings-json' ),
+								'label'    => __( 'Value', 'mai-sellers-json' ),
 								'key'      => 'maisj_identifier_value',
 								'name'     => 'value',
 								'type'     => 'text',
@@ -155,17 +178,17 @@ class Mai_Sellers_JSON_Settings {
 						],
 					],
 					[
-						'label'         => __( 'Sellers', 'mai-settings-json' ),
-						'instructions'  => sprintf( '%s<br>%s', __( 'Add your sellers here. Name and Domain are required when Is Confidential field is unchecked.', 'mai-sellers-json' ), __( 'Shift + Click the up/down arrow on the left to toggle open/closed.', 'mai-settings-json' ) ),
+						'label'         => __( 'Sellers', 'mai-sellers-json' ),
+						'instructions'  => sprintf( '%s<br>%s', __( 'Add your sellers here. Name and Domain are required when Is Confidential field is unchecked.', 'mai-sellers-json' ), __( 'Shift + Click the up/down arrow on the left to toggle open/closed.', 'mai-sellers-json' ) ),
 						'key'           => 'maisj_sellers',
 						'name'          => 'maisj_sellers',
 						'type'          => 'repeater',
 						'collapsed'     => 'maisj_seller_name',
 						'layout'        => 'block',
-						'button_label'  => __( 'Add New Seller', 'mai-settings-json' ),
+						'button_label'  => __( 'Add New Seller', 'mai-sellers-json' ),
 						'sub_fields'    => [
 							[
-								'label'    => __( 'Name', 'mai-settings-json' ) . ' *',
+								'label'    => __( 'Name', 'mai-sellers-json' ) . ' *',
 								'key'      => 'maisj_seller_name',
 								'name'     => 'name',
 								'type'     => 'text',
@@ -174,7 +197,7 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'label'    => __( 'Seller ID', 'mai-settings-json' ),
+								'label'    => __( 'Seller ID', 'mai-sellers-json' ),
 								'key'      => 'maisj_seller_id',
 								'name'     => 'seller_id',
 								'type'     => 'text',
@@ -184,7 +207,7 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'label'    => __( 'Domain', 'mai-settings-json' ) . ' *',
+								'label'    => __( 'Domain', 'mai-sellers-json' ) . ' *',
 								'key'      => 'maisj_seller_domain',
 								'name'     => 'domain',
 								'type'     => 'text',
@@ -193,23 +216,23 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'label'    => __( 'Seller Type', 'mai-settings-json' ),
+								'label'    => __( 'Seller Type', 'mai-sellers-json' ),
 								'key'      => 'maisj_seller_type',
 								'name'     => 'seller_type',
 								'type'     => 'select',
 								'required' => 1,
 								'choices'  => [
-									''             => __( 'Choose one', 'mai-settings-json' ),
-									'PUBLISHER'    => __( 'Publisher', 'mai-settings-json' ),
-									'INTERMEDIARY' => __( 'Intermediary', 'mai-settings-json' ),
-									'BOTH'         => __( 'Both', 'mai-settings-json' ),
+									''             => __( 'Choose one', 'mai-sellers-json' ),
+									'PUBLISHER'    => __( 'Publisher', 'mai-sellers-json' ),
+									'INTERMEDIARY' => __( 'Intermediary', 'mai-sellers-json' ),
+									'BOTH'         => __( 'Both', 'mai-sellers-json' ),
 								],
 								'wrapper'  => [
 									'width' => '50',
 								],
 							],
 							[
-								'message'  => __( 'Is Confidential', 'mai-settings-json' ),
+								'message'  => __( 'Is Confidential', 'mai-sellers-json' ),
 								'key'      => 'maisj_seller_is_confidential',
 								'name'     => 'is_confidential',
 								'type'     => 'true_false',
@@ -218,7 +241,7 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'message'  => __( 'Is Passthrough', 'mai-settings-json' ),
+								'message'  => __( 'Is Passthrough', 'mai-sellers-json' ),
 								'key'      => 'maisj_seller_is_passthrough',
 								'name'     => 'is_passthrough',
 								'type'     => 'true_false',
@@ -227,7 +250,7 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'placeholder' => __( 'Description for this inventory...', 'mai-settings-json' ),
+								'placeholder' => __( 'Description for this inventory...', 'mai-sellers-json' ),
 								'key'         => 'maisj_seller_comment',
 								'name'        => 'comment',
 								'type'        => 'textarea',
@@ -244,7 +267,54 @@ class Mai_Sellers_JSON_Settings {
 						[
 							'param'    => 'options_page',
 							'operator' => '==',
-							'value'    => 'mai-settings-json',
+							'value'    => 'mai-sellers-json',
+						],
+					],
+				],
+			]
+		);
+
+		// Encoder/Decoder.
+		acf_add_local_field_group(
+			[
+				'key'    => 'maisj_encode_decode',
+				'title'  => __( 'ID Encoder/Decoder', 'mai-sellers-json' ),
+				'style'  => 'seamless',
+				'fields' => [
+					[
+						'key'      => 'maisj_encode_decode_message',
+						'type'     => 'message',
+						'message'  => sprintf( '<h2 style="margin:0;padding:0;font-weight:bold;">%s</h2><p>%s</p>', __( 'ID Encoder/Decoder', 'mai-sellers-json' ), __( 'Encode or decode a publishers GAM Network Code', 'mai-sellers-json' ) ),
+						'esc_html' => 0,
+					],
+					[
+						'label' => __( 'Input', 'mai-sellers-json' ),
+						'key'   => 'maisj_encode_decode_input',
+						'name'  => 'maisj_encode_decode_input',
+						'type'  => 'text',
+					],
+					[
+						'label' => __( 'Output', 'mai-sellers-json' ),
+						'key'   => 'maisj_encode_decode_output',
+						'name'  => 'maisj_encode_decode_output',
+						'type'  => 'text',
+					],
+					[
+						'key'         => 'maisj_encode_decode_toggle',
+						'name'        => 'maisj_encode_decode_toggle',
+						'type'        => 'true_false',
+						'ui'          => 1,
+						'ui_on_text'  => __( 'Decode', 'mai-sellers-json' ),
+						'ui_off_text' => __( 'Encode', 'mai-sellers-json' ),
+					],
+				],
+				'position' => 'side',
+				'location' => [
+					[
+						[
+							'param'    => 'options_page',
+							'operator' => '==',
+							'value'    => 'mai-sellers-json',
 						],
 					],
 				],
@@ -279,6 +349,28 @@ class Mai_Sellers_JSON_Settings {
 
 		.acf-repeater .acf-actions .acf-button {
 			float: none !important;
+		}
+
+		#acf-maisj_encode_decode {
+			box-sizing: border-box;
+			padding: 24px;
+			background: rgba(0, 0, 0, 0.05);
+		}
+
+		#acf-maisj_encode_decode .acf-field-maisj-encode-decode-message .acf-label {
+			display: none;
+		}
+
+		#acf-maisj_encode_decode > .inside {
+			margin: 0 !important;
+		}
+
+		#acf-maisj_encode_decode .acf-fields > .acf-field {
+			padding: 0;
+		}
+
+		#acf-maisj_encode_decode .acf-field-maisj-encode-decode-output {
+			margin-block: 16px;
 		}
 		</style>
 		<?php
@@ -422,10 +514,10 @@ class Mai_Sellers_JSON_Settings {
 		// Get name.
 		switch ( $field['key'] ) {
 			case 'maisj_seller_name':
-				$name = __( 'Name', 'mai-settings-json' );
+				$name = __( 'Name', 'mai-sellers-json' );
 			break;
 			case 'maisj_seller_domain':
-				$name = __( 'Domain', 'mai-settings-json' );
+				$name = __( 'Domain', 'mai-sellers-json' );
 			break;
 			default:
 				return $valid;
@@ -451,7 +543,7 @@ class Mai_Sellers_JSON_Settings {
 		$confidential = isset( $current['maisj_seller_is_confidential'] ) ? rest_sanitize_boolean( $current['maisj_seller_is_confidential'] ) : 0;
 
 		if ( $confidential && ! $value ) {
-			return $name . ' ' . __( 'is required when "Is Confidential" field is checked.', 'mai-settings-json' );
+			return $name . ' ' . __( 'is required when "Is Confidential" field is checked.', 'mai-sellers-json' );
 		}
 
 		return $valid;
@@ -481,7 +573,7 @@ class Mai_Sellers_JSON_Settings {
 		$screen = get_current_screen();
 
 		// Bail if not our options page.
-		if ( ! $screen || false === strpos( $screen->id, 'mai-settings-json' ) ) {
+		if ( ! $screen || false === strpos( $screen->id, 'mai-sellers-json' ) ) {
 			return;
 		}
 
@@ -552,11 +644,19 @@ class Mai_Sellers_JSON_Settings {
 			'options_maisj_version',
 			'options_maisj_identifiers',
 			'options_maisj_sellers',
+			'options_maisj_encode_decode_message',
+			'options_maisj_encode_decode_input',
+			'options_maisj_encode_decode_output',
+			'options_maisj_encode_decode_toggle',
 			'_options_maisj_contact_address',
 			'_options_maisj_contact_email',
 			'_options_maisj_version',
 			'_options_maisj_identifiers',
 			'_options_maisj_sellers',
+			'_options_maisj_encode_decode_message',
+			'_options_maisj_encode_decode_input',
+			'_options_maisj_encode_decode_output',
+			'_options_maisj_encode_decode_toggle',
 		];
 
 		// Delete remaining options manually.
@@ -589,7 +689,7 @@ class Mai_Sellers_JSON_Settings {
 			return $actions;
 		}
 
-		$actions['settings'] = $this->get_settings_link( __( 'Settings', 'mai-settings-json' ) );
+		$actions['settings'] = $this->get_settings_link( __( 'Settings', 'mai-sellers-json' ) );
 
 		return $actions;
 	}
@@ -609,4 +709,46 @@ class Mai_Sellers_JSON_Settings {
 
 		return $link;
 	}
+}
+
+add_action('admin_menu', 'custom_sidebar_meta_box_og');
+
+function custom_sidebar_meta_box_og() {
+    add_meta_box(
+        'custom-sidebar-box',  // Unique ID
+        'Custom Sidebar Content',  // Box title
+        'render_custom_sidebar_content_og',  // Callback function to display the content
+        'acf-options-mai-sellers-json',  // ACF options page name (menu slug)
+        'side',  // Context (right sidebar)
+        'default'  // Priority
+    );
+}
+
+function render_custom_sidebar_content_og($post) {
+    // Content you want to display in the custom meta box
+    echo 'Your custom content goes here.';
+}
+
+add_action( 'add_meta_boxes', 'custom_sidebar_meta_box');
+function custom_sidebar_meta_box() {
+    // Make sure the ACF options page exists
+    if (!function_exists('acf_add_options_sub_page')) {
+        return;
+    }
+
+    // Add the meta box to the ACF options page
+    add_meta_box(
+        'custom-sidebar-box', // Unique ID
+        'Custom Sidebar Content', // Box title
+        'render_custom_sidebar_content', // Callback function to display the content
+		'acf-options-mai-sellers-json', // ACF options page name
+        'side', // Context (right sidebar)
+        'high' // Priority
+    );
+}
+
+// Render the custom meta box content
+function render_custom_sidebar_content( $post ) {
+    // Content you want to display in the custom meta box
+    echo 'Your custom content goes here.';
 }
