@@ -147,7 +147,7 @@ class Mai_Sellers_JSON_Settings {
 					],
 					[
 						'label'         => __( 'Identifiers', 'mai-sellers-json' ),
-						'instructions'  => sprintf( '%s<br>%s', __( 'Add your identifiers here.', 'mai-sellers-json' ), __( 'Shift + Click the up/down arrow on the left to toggle open/closed.', 'mai-sellers-json' ) ),
+						'instructions'  => __( 'Add your identifiers here.', 'mai-sellers-json' ),
 						'key'           => 'maisj_identifiers',
 						'name'          => 'maisj_identifiers',
 						'type'          => 'repeater',
@@ -713,46 +713,4 @@ class Mai_Sellers_JSON_Settings {
 
 		return $link;
 	}
-}
-
-add_action('admin_menu', 'custom_sidebar_meta_box_og');
-
-function custom_sidebar_meta_box_og() {
-    add_meta_box(
-        'custom-sidebar-box',  // Unique ID
-        'Custom Sidebar Content',  // Box title
-        'render_custom_sidebar_content_og',  // Callback function to display the content
-        'acf-options-mai-sellers-json',  // ACF options page name (menu slug)
-        'side',  // Context (right sidebar)
-        'default'  // Priority
-    );
-}
-
-function render_custom_sidebar_content_og($post) {
-    // Content you want to display in the custom meta box
-    echo 'Your custom content goes here.';
-}
-
-add_action( 'add_meta_boxes', 'custom_sidebar_meta_box');
-function custom_sidebar_meta_box() {
-    // Make sure the ACF options page exists
-    if (!function_exists('acf_add_options_sub_page')) {
-        return;
-    }
-
-    // Add the meta box to the ACF options page
-    add_meta_box(
-        'custom-sidebar-box', // Unique ID
-        'Custom Sidebar Content', // Box title
-        'render_custom_sidebar_content', // Callback function to display the content
-		'acf-options-mai-sellers-json', // ACF options page name
-        'side', // Context (right sidebar)
-        'high' // Priority
-    );
-}
-
-// Render the custom meta box content
-function render_custom_sidebar_content( $post ) {
-    // Content you want to display in the custom meta box
-    echo 'Your custom content goes here.';
 }
