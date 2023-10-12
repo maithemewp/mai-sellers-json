@@ -622,16 +622,27 @@ class Mai_Sellers_JSON_Settings {
 				continue;
 			}
 
-			// Add to data to save.
-			$data['sellers'][] = [
+			$seller = [
 				'seller_id'       => $id,
 				'name'            => $name,
 				'domain'          => $domain,
 				'seller_type'     => $type,
-				'is_confidential' => $confidential,
-				'is_passthrough'  => $passthrough,
-				'comment'         => $comment,
 			];
+
+			if ( $confidential ) {
+				$seller['is_confidential'] = $confidential;
+			}
+
+			if ( $passthrough ) {
+				$seller['is_passthrough'] = $passthrough;
+			}
+
+			if ( $comment ) {
+				$seller['comment'] = $comment;
+			}
+
+			// Add to data to save.
+			$data['sellers'][] = $seller;
 		}
 
 		// Save new data to our field key.
