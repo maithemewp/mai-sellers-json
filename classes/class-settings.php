@@ -579,9 +579,9 @@ class Mai_Sellers_JSON_Settings {
 
 		// Set data var.
 		$data  = [
-			'contact_email'   => (string) get_field( 'maisj_contact_email', 'option' ),
-			'contact_address' => (string) get_field( 'maisj_contact_address', 'option' ),
-			'version'         => (float) get_field( 'maisj_version', 'option' ),
+			'contact_email'   => sanitize_text_field( get_field( 'maisj_contact_email', 'option' ) ),
+			'contact_address' => sanitize_text_field( get_field( 'maisj_contact_address', 'option' ) ),
+			'version'         => sanitize_text_field( get_field( 'maisj_version', 'option' ) ),
 		];
 
 		// Get repeaters.
