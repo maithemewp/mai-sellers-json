@@ -93,6 +93,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return void
 	 */
 	function register() {
+		if ( ! function_exists( 'get_home_path' ) ) {
+			return;
+		}
+
 		$this->path      = get_home_path() . 'sellers.json';
 		$this->exists    = file_exists( $this->path );
 		$this->writeable = is_writable( $this->path );
