@@ -487,18 +487,14 @@ class Mai_Sellers_JSON_Settings {
 				}
 			}
 
-			ray( $checkboxes );
-
 			$field['value'][] = [
-				'maisj_seller_network_code'    => isset( $values['network_code'] ) ? sanitize_text_field( $values['network_code'] ) : '',
-				'maisj_seller_id'              => isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '',
-				'maisj_seller_name'            => isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '',
-				'maisj_seller_domain'          => isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '',
-				'maisj_seller_type'            => isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '',
-				'maisj_seller_checkboxes'      => $checkboxes,
-				// 'maisj_seller_is_confidential' => isset( $values['is_confidential'] ) ? rest_sanitize_boolean( $values['is_confidential'] ) : 0,
-				// 'maisj_seller_is_passthrough'  => isset( $values['is_passthrough'] ) ? rest_sanitize_boolean( $values['is_passthrough'] ) : 0,
-				'maisj_seller_comment'         => isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '',
+				'maisj_seller_network_code' => isset( $values['network_code'] ) ? sanitize_text_field( $values['network_code'] ) : '',
+				'maisj_seller_id'           => isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '',
+				'maisj_seller_name'         => isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '',
+				'maisj_seller_domain'       => isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '',
+				'maisj_seller_type'         => isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '',
+				'maisj_seller_checkboxes'   => $checkboxes,
+				'maisj_seller_comment'      => isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '',
 			];
 		}
 
