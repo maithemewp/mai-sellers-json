@@ -137,10 +137,12 @@ class Mai_Sellers_JSON_Settings {
 					],
 					[
 						'label'         => __( 'Version', 'mai-sellers-json' ),
+						'instructions'  => __( 'Currently only 1.0 is supported.', 'mai-sellers-json' ),
 						'key'           => 'maisj_version',
 						'name'          => 'maisj_version',
 						'type'          => 'text',
 						'required'      => 1,
+						'readonly'      => 1,
 						'default_value' => '1.0',
 					],
 					[
@@ -416,7 +418,9 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_version( $field ) {
-		$field['value'] = sanitize_text_field( maisj_get_value( 'version' ) );
+		$version        = sanitize_text_field( maisj_get_value( 'version' ) );
+		$version        = $version ? $version : '1.0';
+		$field['value'] = $version;
 
 		return $field;
 	}
