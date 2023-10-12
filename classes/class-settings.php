@@ -199,22 +199,32 @@ class Mai_Sellers_JSON_Settings {
 								],
 							],
 							[
-								'label'    => __( 'Seller ID', 'mai-sellers-json' ),
-								'key'      => 'maisj_seller_id',
-								'name'     => 'seller_id',
-								'type'     => 'text',
-								'required' => 1,
-								'wrapper'  => [
-									'width' => '50',
-								],
-							],
-							[
 								'label'    => __( 'Domain', 'mai-sellers-json' ) . ' *',
 								'key'      => 'maisj_seller_domain',
 								'name'     => 'domain',
 								'type'     => 'text',
 								'wrapper'  => [
 									'width' => '50',
+								],
+							],
+							[
+								'label'    => __( 'Network Code', 'mai-sellers-json' ),
+								'key'      => 'maisj_seller_network_code',
+								'name'     => 'network_code',
+								'type'     => 'text',
+								'required' => 1,
+								'wrapper'  => [
+									'width' => '33',
+								],
+							],
+							[
+								'label'    => __( 'Seller ID', 'mai-sellers-json' ),
+								'key'      => 'maisj_seller_id',
+								'name'     => 'seller_id',
+								'type'     => 'text',
+								'readonly' => 1,
+								'wrapper'  => [
+									'width' => '33',
 								],
 							],
 							[
@@ -230,25 +240,19 @@ class Mai_Sellers_JSON_Settings {
 									'BOTH'         => __( 'Both', 'mai-sellers-json' ),
 								],
 								'wrapper'  => [
-									'width' => '50',
+									'width' => '33',
 								],
 							],
 							[
-								'message'  => __( 'Is Confidential', 'mai-sellers-json' ),
-								'key'      => 'maisj_seller_is_confidential',
-								'name'     => 'is_confidential',
-								'type'     => 'true_false',
-								'wrapper'  => [
-									'width' => '25',
+								'key'      => 'maisj_seller_checkboxes',
+								'name'     => 'checkboxes',
+								'type'     => 'checkbox',
+								'choices'  => [
+									'is_confidential' => __( 'Is Confidential', 'mai-sellers-json' ),
+									'is_passthrough'  => __( 'Is Passthrough', 'mai-sellers-json' ),
 								],
-							],
-							[
-								'message'  => __( 'Is Passthrough', 'mai-sellers-json' ),
-								'key'      => 'maisj_seller_is_passthrough',
-								'name'     => 'is_passthrough',
-								'type'     => 'true_false',
 								'wrapper'  => [
-									'width' => '25',
+									'width' => '33',
 								],
 							],
 							[
@@ -258,7 +262,7 @@ class Mai_Sellers_JSON_Settings {
 								'type'        => 'textarea',
 								'rows'        => 2,
 								'wrapper'     => [
-									'width' => '50',
+									'width' => '66',
 								],
 							],
 						],
@@ -351,6 +355,11 @@ class Mai_Sellers_JSON_Settings {
 
 		.acf-repeater .acf-actions .acf-button {
 			float: none !important;
+		}
+
+		.acf-field-maisj-seller-checkboxes .acf-label,
+		.acf-field-maisj-seller-comment .acf-label {
+			display: none;
 		}
 
 		#acf-maisj_encode_decode {
@@ -470,13 +479,25 @@ class Mai_Sellers_JSON_Settings {
 		}
 
 		foreach ( $sellers as $key => $values ) {
+			$checkboxes = [];
+
+			foreach ( [ 'is_confidential', 'is_passthrough' ] as $checkbox ) {
+				if ( isset( $values[ $checkbox ] ) && absint( $values[ $checkbox ] ) ) {
+					$checkboxes[] = $checkbox;
+				}
+			}
+
+			ray( $checkboxes );
+
 			$field['value'][] = [
+				'maisj_seller_network_code'    => isset( $values['network_code'] ) ? sanitize_text_field( $values['network_code'] ) : '',
 				'maisj_seller_id'              => isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '',
 				'maisj_seller_name'            => isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '',
 				'maisj_seller_domain'          => isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '',
 				'maisj_seller_type'            => isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '',
-				'maisj_seller_is_confidential' => isset( $values['is_confidential'] ) ? rest_sanitize_boolean( $values['is_confidential'] ) : 0,
-				'maisj_seller_is_passthrough'  => isset( $values['is_passthrough'] ) ? rest_sanitize_boolean( $values['is_passthrough'] ) : 0,
+				'maisj_seller_checkboxes'      => $checkboxes,
+				// 'maisj_seller_is_confidential' => isset( $values['is_confidential'] ) ? rest_sanitize_boolean( $values['is_confidential'] ) : 0,
+				// 'maisj_seller_is_passthrough'  => isset( $values['is_passthrough'] ) ? rest_sanitize_boolean( $values['is_passthrough'] ) : 0,
 				'maisj_seller_comment'         => isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '',
 			];
 		}
@@ -608,22 +629,26 @@ class Mai_Sellers_JSON_Settings {
 			];
 		}
 
+
 		// Format sellers.
 		foreach ( $sellers as $values ) {
-			$id           = isset( $values['seller_id'] ) ? sanitize_text_field( $values['seller_id'] ) : '';
+			$network_code = isset( $values['network_code'] ) ? sanitize_text_field( $values['network_code'] ) : '';
+			$seller_id    = $network_code ? $this->encode( $network_code ) : '';
 			$name         = isset( $values['name'] ) ? sanitize_text_field( $values['name'] ) : '';
 			$domain       = isset( $values['domain'] ) ? $this->get_url_host( $values['domain'] ) : '';
 			$type         = isset( $values['seller_type'] ) ? sanitize_text_field( $values['seller_type'] ) : '';
-			$confidential = isset( $values['is_confidential'] ) ? absint( $values['is_confidential'] ) : 0;
-			$passthrough  = isset( $values['is_passthrough'] ) ? absint( $values['is_passthrough'] ) : 0;
+			$checkboxes   = isset( $values['checkboxes'] ) ? (array) $values['checkboxes'] : [];
+			$confidential = in_array( 'is_confidential', $checkboxes ) ? 1 : 0;
+			$passthrough  = in_array( 'is_passthrough', $checkboxes ) ? 1 : 0;
 			$comment      = isset( $values['comment'] ) ? sanitize_text_field( $values['comment'] ) : '';
 
-			if ( ! ( $id && $name && $domain && $type ) ) {
+			if ( ! ( $seller_id && $name && $domain && $type ) ) {
 				continue;
 			}
 
 			$seller = [
-				'seller_id'       => $id,
+				'network_code'    => $network_code,
+				'seller_id'       => $seller_id,
 				'name'            => $name,
 				'domain'          => $domain,
 				'seller_type'     => $type,
@@ -645,7 +670,7 @@ class Mai_Sellers_JSON_Settings {
 			$data['sellers'][] = $seller;
 		}
 
-		// Save new data to our field key.
+
 		update_option( 'mai_sellers_json', $data );
 
 		// Clear repeater fields.
@@ -682,9 +707,56 @@ class Mai_Sellers_JSON_Settings {
 		// Get values.
 		$array = get_option( 'mai_sellers_json' );
 
-		// JSON encode and write to sellers.json file.
+		// Remove network codes before saving json file.
+		if ( isset( $array['sellers'] ) ) {
+			foreach ( $array['sellers'] as $index => $values ) {
+				unset( $array['sellers'][ $index ]['network_code'] );
+			}
+		}
+
+		// Encode for json.
 		$json = json_encode( $array, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+
+		// Write to file.
 		file_put_contents( $this->path, $json );
+	}
+
+	/**
+	 * Encodes a string and removes special characters.
+	 *
+	 * @since TBD
+	 *
+	 * @param string $input
+	 *
+	 * @return string
+	 */
+	function encode( $input ) {
+		$base64 = base64_encode( $input );
+
+		// Replace characters not in the custom alphabet with '='.
+		$base64 = strtr( $base64, '+/', '-_' );
+
+		// Remove any trailing '=' characters.
+		return rtrim( $base64, '=' );
+	}
+
+	/**
+	 * Decodes a string and removes special characters.
+	 *
+	 * @since TBD
+	 *
+	 * @param string $input
+	 *
+	 * @return string
+	 */
+	function decode( $input ) {
+		// Add back any trailing '=' characters.
+		$input = str_pad( $input, (int) ( ceil( strlen( $input ) / 4 ) * 4 ), '=', STR_PAD_RIGHT );
+
+		// Replace characters in the custom alphabet.
+		$input = strtr( $input, '-_', '+/' );
+
+		return base64_decode( $input );
 	}
 
 	/**
