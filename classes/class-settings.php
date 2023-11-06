@@ -159,7 +159,7 @@ class Mai_Sellers_JSON_Settings {
 						'min'           => 0,
 						'max'           => 0,
 						'layout'        => 'block',
-						'button_label'  => __( 'Add New Seller', 'mai-sellers-json' ),
+						'button_label'  => __( 'Add New Identifier', 'mai-sellers-json' ),
 						'sub_fields'    => [
 							[
 								'label'    => __( 'Name', 'mai-sellers-json' ),
