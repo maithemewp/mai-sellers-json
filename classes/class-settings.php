@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class Mai_Sellers_JSON_Settings {
 	protected $path;
 	protected $exists;
-	protected $writable;
+	protected $writeable;
 
 	/**
 	 * Mai_Sellers_JSON_Settings constructor.
