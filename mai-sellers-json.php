@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Sellers.json
  * Plugin URI:      https://bizbudding.com
  * Description:     Manage your sellers.json file for advertising.
- * Version:         0.1.1
+ * Version:         0.1.2
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -92,7 +92,7 @@ final class Mai_Sellers_JSON_Plugin {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'MAI_SELLERS_JSON_VERSION' ) ) {
-			define( 'MAI_SELLERS_JSON_VERSION', '0.1.1' );
+			define( 'MAI_SELLERS_JSON_VERSION', '0.1.2' );
 		}
 
 		// Plugin Folder Path.
