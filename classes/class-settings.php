@@ -723,6 +723,7 @@ class Mai_Sellers_JSON_Settings {
 
 	/**
 	 * Encodes a string and removes special characters.
+	 * The main encoding function needs to match what is in Mai Publisher plugin.
 	 *
 	 * @since TBD
 	 *
