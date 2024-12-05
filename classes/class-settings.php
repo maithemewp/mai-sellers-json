@@ -401,6 +401,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_contact_address( $field ) {
+		if ( ! is_admin() ) {
+			return $field;
+		}
+
 		$field['value'] = sanitize_text_field( maisj_get_value( 'contact_address' ) );
 
 		return $field;
@@ -416,6 +420,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_contact_email( $field ) {
+		if ( ! is_admin() ) {
+			return $field;
+		}
+
 		$field['value'] = sanitize_email( maisj_get_value( 'contact_email' ) );
 
 		return $field;
@@ -431,6 +439,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_version( $field ) {
+		if ( ! is_admin() ) {
+			return $field;
+		}
+
 		$version        = sanitize_text_field( maisj_get_value( 'version' ) );
 		$version        = $version ? $version : '1.0';
 		$field['value'] = $version;
@@ -448,6 +460,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_identifiers( $field ) {
+		if ( ! is_admin() ) {
+			return $field;
+		}
+
 		$field['value'] = [];
 		$identifiers    = maisj_get_value( 'identifiers' );
 
@@ -475,6 +491,10 @@ class Mai_Sellers_JSON_Settings {
 	 * @return array
 	 */
 	function load_sellers( $field ) {
+		if ( ! is_admin() ) {
+			return $field;
+		}
+
 		$field['value'] = [];
 		$sellers        = maisj_get_value( 'sellers' );
 
@@ -669,7 +689,6 @@ class Mai_Sellers_JSON_Settings {
 			// Add to data to save.
 			$data['sellers'][] = $seller;
 		}
-
 
 		update_option( 'mai_sellers_json', $data );
 
